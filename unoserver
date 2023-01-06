@@ -1,0 +1,72 @@
+#!/bin/bash
+
+#chkconfig:2345 80 05
+#description:unoserver start
+
+LIBREOFFICE=/opt/libreoffice7.3/program
+
+PYTHON=${LIBREOFFICE}/python
+SOFFICE=${LIBREOFFICE}/soffice
+SOFFICEBIN=${LIBREOFFICE}/soffice.bin
+
+EXEC="${PYTHON} -m unoserver.server --daemon --executable ${SOFFICE}"
+
+PIDFILE=/var/run/unoserver.pid
+
+case "$1" in
+    start)
+        if [ -f ${PIDFILE} ]
+        then
+            echo "${PIDFILE} exists, process is already running or crashed"
+        else
+            echo "Starting Unoserver server ..."
+            ${EXEC}
+            while [ -z ${PID} ]
+            do
+                echo "Waiting for Unoserver to start ..."
+                sleep 1
+                PID=$(pidof ${SOFFICEBIN})
+            done
+            echo ${PID} > ${PIDFILE}
+            echo "Unoserver started"
+        fi
+        ;;
+    stop)
+        if [ ! -f ${PIDFILE} ]
+        then
+            echo "${PIDFILE} does not exist, process is not running"
+        else
+            PID=$(cat ${PIDFILE})
+            echo "Stopping ..."
+            if [ ! -z ${PID} ]
+            then
+                kill ${PID}
+                while [ -x /proc/${PID} ]
+                do
+                    echo "Waiting for Unoserver to shutdown ..."
+                    sleep 1
+                done
+            else
+                pkill -9 soffice.bin
+            fi
+            rm -rf ${PIDFILE}
+            echo "Unoserver stopped"
+        fi
+        ;;
+    status)
+        PID=$(cat ${PIDFILE})
+        if [ ! -x /proc/${PID} ]
+        then
+            echo 'Unoserver is not running'
+        else
+            echo "Unoserver is running (${PID})"
+        fi
+        ;;
+    restart)
+        $0 stop
+        $0 start
+        ;;
+    *)
+        echo "Please use start, stop, restart or status as first argument"
+        ;;
+esac

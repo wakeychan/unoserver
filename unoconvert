@@ -1,0 +1,4 @@
+#!/bin/bash
+# Wrapper script for unoserver to forward processing.
+# Install to /usr/bin/unoconvert with 755 permissions
+/opt/libreoffice7.3/program/python -m unoserver.converter --interface 127.0.0.1 --port 2002 "$@"
