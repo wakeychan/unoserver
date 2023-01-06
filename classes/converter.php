@@ -45,8 +45,19 @@ class converter implements \core_files\converter_interface {
     /** Not set */
     const UNOSERVERPATH_EMPTY = 'empty';
 
+    /** Does not exist */
+    const UNOSERVERPATH_DOESNOTEXIST = 'doesnotexist';
+
     /** Is a dir */
     const UNOSERVERPATH_ISDIR = 'isdir';
+
+    /** Not executable */
+    const UNOSERVERPATH_NOTEXECUTABLE = 'notexecutable';
+
+    /**
+     * @var bool $requirementsmet Whether requirements have been met.
+     */
+    protected static $requirementsmet = null;
 
     /**
      * @var array $formats The list of formats supported by unoserver.
@@ -231,7 +242,12 @@ class converter implements \core_files\converter_interface {
      * @return bool
      */
     public static function are_requirements_met() {
-        return self::test_unoserver_path()->status === self::UNOSERVERPATH_OK;
+        if (self::$requirementsmet === null) {
+            self::$requirementsmet = self::test_unoserver_path()->status === self::UNOSERVERPATH_OK;
+        }
+
+        return self::$requirementsmet;
+
     }
 
     /**
@@ -250,6 +266,18 @@ class converter implements \core_files\converter_interface {
 
         if (empty($unoserverpath)) {
             $ret->status = self::UNOSERVERPATH_EMPTY;
+            return $ret;
+        }
+        if (!file_exists($unoserverpath)) {
+            $ret->status = self::UNOSERVERPATH_DOESNOTEXIST;
+            return $ret;
+        }
+        if (is_dir($unoserverpath)) {
+            $ret->status = self::UNOSERVERPATH_ISDIR;
+            return $ret;
+        }
+        if (!\file_is_executable($unoserverpath)) {
+            $ret->status = self::UNOSERVERPATH_NOTEXECUTABLE;
             return $ret;
         }
 
