@@ -5,11 +5,14 @@
 
 LIBREOFFICE=/opt/libreoffice7.3/program
 
+INTERFACE=localhost
+PORT=2002
+
 PYTHON=${LIBREOFFICE}/python
 SOFFICE=${LIBREOFFICE}/soffice
 SOFFICEBIN=${LIBREOFFICE}/soffice.bin
 
-EXEC="${PYTHON} -m unoserver.server --daemon --executable ${SOFFICE}"
+EXEC="${PYTHON} -m unoserver.server --daemon --interface ${INTERFACE} --port ${PORT} --executable ${SOFFICE}"
 
 PIDFILE=/var/run/unoserver.pid
 
